@@ -5,6 +5,7 @@ from src import database as data
 router = APIRouter()
 db = data.database()
 
+
 # include top 3 actors by number of lines
 @router.get("/movies/{movie_id}", tags=["movies"])
 def get_movie(movie_id: str):
@@ -23,16 +24,28 @@ def get_movie(movie_id: str):
 
     """
 
-
     json = None
     if movie_id in db.movies:
         character_list = []
-        db_characters = db.characters.values()
-
-        for character in db_characters:
+        char_values = db.characters.values()
+        for character in char_values:
             if character.movie_id == movie_id:
                 character_list.append(character)
-
+        character_list = sorted(character_list, reverse=True)  # sort character list
+        character_list = character_list[:5]  # first 5 elements of character list
+        json_list = []
+        for character in character_list:
+            my_json = {
+                "character_id": character.character_id,
+                "character": character.name,
+                "num_lines": character.lineCount
+            }
+            character_list.append(my_json)
+        json = {
+            "movie_id": movie_id,
+            "title": db.movies[movie_id].title,
+            "top_5_characters": json_list
+        }
 
     if json is None:
         raise HTTPException(status_code=404, detail="movie not found.")
@@ -49,10 +62,10 @@ class movie_sort_options(str, Enum):
 # Add get parameters
 @router.get("/movies/", tags=["movies"])
 def list_movies(
-    name: str = "",
-    limit: int = 50,
-    offset: int = 0,
-    sort: movie_sort_options = movie_sort_options.movie_title,
+        name: str = "",
+        limit: int = 50,
+        offset: int = 0,
+        sort: movie_sort_options = movie_sort_options.movie_title,
 ):
     """
     This endpoint returns a list of movies. For each movie it returns:
