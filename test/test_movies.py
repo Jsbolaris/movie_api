@@ -6,9 +6,11 @@ import json
 
 client = TestClient(app)
 
+def myTest():
+    info = client.get("")
 
 def test_get_movie():
-    response = client.get("/movies/44")
+    response = client.get("/movies/?name=man&limit=5&offset=0&sort=movie_title")
     assert response.status_code == 200
 
     with open("test/movies/44.json", encoding="utf-8") as f:

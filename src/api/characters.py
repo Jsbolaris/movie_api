@@ -1,6 +1,10 @@
+from collections import defaultdict
+
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from src import database as db
+from src import database as data
+
+db = data.database()
 
 router = APIRouter()
 
@@ -30,6 +34,33 @@ def get_character(id: str):
         if character["character_id"] == id:
             print("character found")
 
+    if id in db.characters:
+        return_json = []
+        char = db.characters[id]
+        conversations = defaultdict(int)
+        for c in db.conversations.values():  # traverse the conversation relation and add the conversation if they
+            # shared one
+            if c.character1_id == char.character_id:  # check second character
+                conversations[c.character2_id] += c.lineCount
+            elif c.character2_id == char.character_id:  # check first character
+                conversations[c.character1_id] += c.lineCount
+        sorted_conv = sorted(c.items(), reverse=True) # sort list by line count
+        # convert list into json format for return
+        for c in sorted_conv:
+
+            c_json = {
+                "character_id": c[0],
+                "character": db.characters[c[0]].name,
+                "gender": db.characters[c[0]].gender,
+                "number_of_lines_together": c[1]
+            }
+            return_json.append(c_json)
+        json = {
+            "character_id": char.character_id,
+            "character": char.name,
+            "movie": db.movies[char.movie_id].title,
+
+        }
     json = None
 
     if json is None:
@@ -46,10 +77,10 @@ class character_sort_options(str, Enum):
 
 @router.get("/characters/", tags=["characters"])
 def list_characters(
-    name: str = "",
-    limit: int = 50,
-    offset: int = 0,
-    sort: character_sort_options = character_sort_options.character,
+        name: str = "",
+        limit: int = 50,
+        offset: int = 0,
+        sort: character_sort_options = character_sort_options.character,
 ):
     """
     This endpoint returns a list of characters. For each character it returns:
