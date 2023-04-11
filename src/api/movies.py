@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from src import database as db
+from src import database as data
 
 router = APIRouter()
-
+db = data.database()
 
 # include top 3 actors by number of lines
 @router.get("/movies/{movie_id}", tags=["movies"])
@@ -23,11 +23,16 @@ def get_movie(movie_id: str):
 
     """
 
-    for movie in db.movies:
-        if movie["movie_id"] == id:
-            print("movie found")
 
     json = None
+    if movie_id in db.movies:
+        character_list = []
+        db_characters = db.characters.values()
+
+        for character in db_characters:
+            if character.movie_id == movie_id:
+                character_list.append(character)
+
 
     if json is None:
         raise HTTPException(status_code=404, detail="movie not found.")

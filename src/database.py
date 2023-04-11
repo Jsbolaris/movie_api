@@ -1,10 +1,11 @@
 import csv
 
+
 # TODO: You will want to replace all of the code below. It is just to show you
 # an example of reading the CSV files where you will get the data to complete
 # the assignment.
 
-print("reading movies")
+# print("reading movies")
 
 
 # define all objects
@@ -57,6 +58,13 @@ class conversation:
 # define database with all the information
 # fill a dictionary with the information for each relation
 class database:
+    conversations = {}
+    with open("conversation.csv", mode="r", encoding="utf8") as csv_file:
+        for row in csv.DictReader(csv_file, skipinitialspace=True):
+            curr_conversation = conversation(int(row['conversation_id']), int(row['character1_id']),
+                                             int(row['character2_id']), int(row['movie_id']))
+        conversations[curr_conversation.conversation_id] = curr_conversation
+
     characters = {}  # empty character list
     with open("characters.csv", mode="r", encoding="utf8") as csv_file:
         for row in csv.DictReader(csv_file, skipinitialspace=True):
@@ -70,3 +78,14 @@ class database:
             curr_movie = movie(int(row['movie_id']), str(row['title']), int(row['year']), float(row['imdb_rating']),
                                int(row['imdb_votes']), str(row['raw_script_url']))
             movies[curr_movie.movie_id] = curr_movie
+
+    lines = {}
+    with open("lines.csv", mode="r", encoding="utf8") as csv_file:
+        for row in csv.DictReader(csv_file, skipinitialspace=True):
+            curr_line = line(int(row['line_id']), int(row['character_id']), int(row['movie_id']),
+                             int(row['conversation_id']), int(row['line_sort']), str(row['line_text']))
+            lines[curr_line.line_id] = curr_line
+
+    for line in lines.values():
+        conversations[line.conversation_id].numOfLines += 1
+        characters[line.character_id].lines += 1
