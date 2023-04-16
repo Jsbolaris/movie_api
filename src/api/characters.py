@@ -1,16 +1,32 @@
-from collections import defaultdict
-
 from fastapi import APIRouter, HTTPException
 from enum import Enum
-from src import database as data
+from collections import Counter
 
-db = data.database()
+from fastapi.params import Query
+from src import database as db
 
 router = APIRouter()
 
 
+def get_top_conv_characters(character):
+    c_id = character.id
+    movie_id = character.movie_id
+    all_convs = filter(
+        lambda conv: conv.movie_id == movie_id
+        and (conv.c1_id == c_id or conv.c2_id == c_id),
+        db.conversations.values(),
+    )
+    line_counts = Counter()
+
+    for conv in all_convs:
+        other_id = conv.c2_id if conv.c1_id == c_id else conv.c1_id
+        line_counts[other_id] += conv.num_lines
+
+    return line_counts.most_common()
+
+
 @router.get("/characters/{id}", tags=["characters"])
-def get_character(id: str):
+def get_character(id: int):
     """
     This endpoint returns a single character by its identifier. For each character
     it returns:
@@ -30,43 +46,29 @@ def get_character(id: str):
     * `number_of_lines_together`: The number of lines the character has with the
       originally queried character.
     """
-    for character in db.characters:
-        if character["character_id"] == id:
-            print("character found")
 
-    if id in db.characters:
-        return_json = []
-        char = db.characters[id]
-        conversations = defaultdict(int)
-        for c in db.conversations.values():  # traverse the conversation relation and add the conversation if they
-            # shared one
-            if c.character1_id == char.character_id:  # check second character
-                conversations[c.character2_id] += c.lineCount
-            elif c.character2_id == char.character_id:  # check first character
-                conversations[c.character1_id] += c.lineCount
-        sorted_conv = sorted(c.items(), reverse=True) # sort list by line count
-        # convert list into json format for return
-        for c in sorted_conv:
+    character = db.characters.get(id)
 
-            c_json = {
-                "character_id": c[0],
-                "character": db.characters[c[0]].name,
-                "gender": db.characters[c[0]].gender,
-                "number_of_lines_together": c[1]
-            }
-            return_json.append(c_json)
-        json = {
-            "character_id": char.character_id,
-            "character": char.name,
-            "movie": db.movies[char.movie_id].title,
-
+    if character:
+        movie = db.movies.get(character.movie_id)
+        result = {
+            "character_id": character.id,
+            "character": character.name,
+            "movie": movie and movie.title,
+            "gender": character.gender,
+            "top_conversations": (
+                {
+                    "character_id": other_id,
+                    "character": db.characters[other_id].name,
+                    "gender": db.characters[other_id].gender,
+                    "number_of_lines_together": lines,
+                }
+                for other_id, lines in get_top_conv_characters(character)
+            ),
         }
-    json = None
+        return result
 
-    if json is None:
-        raise HTTPException(status_code=404, detail="movie not found.")
-
-    return json
+    raise HTTPException(status_code=404, detail="character not found.")
 
 
 class character_sort_options(str, Enum):
@@ -77,10 +79,10 @@ class character_sort_options(str, Enum):
 
 @router.get("/characters/", tags=["characters"])
 def list_characters(
-        name: str = "",
-        limit: int = 50,
-        offset: int = 0,
-        sort: character_sort_options = character_sort_options.character,
+    name: str = "",
+    limit: int = Query(50, ge=1, le=250),
+    offset: int = Query(0, ge=0),
+    sort: character_sort_options = character_sort_options.character,
 ):
     """
     This endpoint returns a list of characters. For each character it returns:
@@ -104,5 +106,35 @@ def list_characters(
     number of results to skip before returning results.
     """
 
-    json = None
+    if name:
+
+        def filter_fn(c):
+            return c.name and name.upper() in c.name
+
+    else:
+
+        def filter_fn(_):
+            return True
+
+    items = list(filter(filter_fn, db.characters.values()))
+
+    def none_last(x, reverse=False):
+        return (x is None) ^ reverse, x
+
+    if sort == character_sort_options.character:
+        items.sort(key=lambda c: none_last(c.name))
+    elif sort == character_sort_options.movie:
+        items.sort(key=lambda c: none_last(db.movies[c.movie_id].title))
+    elif sort == character_sort_options.number_of_lines:
+        items.sort(key=lambda c: none_last(c.num_lines, True), reverse=True)
+
+    json = (
+        {
+            "character_id": c.id,
+            "character": c.name,
+            "movie": db.movies[c.movie_id].title,
+            "number_of_lines": c.num_lines,
+        }
+        for c in items[offset : offset + limit]
+    )
     return json
