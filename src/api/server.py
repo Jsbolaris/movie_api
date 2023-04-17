@@ -18,9 +18,9 @@ You can:
 
 
 ## Lines:  
-* **find lines said by a certain character
-* **list lines said based on user filter options
-* **find lines said to a character
+* **find lines said by a certain character**
+* **list lines said based on user filter options**
+* **find lines said to a character**
 """
 tags_metadata = [
     {
