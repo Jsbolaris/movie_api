@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get("/lines/{id}", tags=["lines"])
-def get_line(id: str):
+def get_line(id: int):
     """
     This endpoint returns a line by its identifier id. For each line:
     * 'line_id:' the internal id of the movie.
