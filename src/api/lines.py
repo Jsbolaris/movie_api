@@ -8,22 +8,20 @@ router = APIRouter()
 @router.get("/lines/{id}", tags=["lines"])
 def get_line(id: str):
     """
-
-
-
-    :param id:
-    :return:
+    This endpoint returns a line by it's identifier id. For each line:
+    * 'line_id:' the internal id of the movie.
+    * 'character_id': the character identifier for the character who spoke the line.
+    * 'movie_id': the movie identifier for the movie the line was in
+    * 'conversation_id': the conversation that this line was a part of.
+    * 'line_text': text of the line spoken
     """
     try:
-        curr_line = db.lines[id]
+        curr_line = db.lines.get(id)
     except KeyError:
         raise HTTPException(status_code=404, detail="No matching line was found")
     return_line = {
         "line_id": id,
-        "character_id": int(curr_line["character_id"]),
-        "movie_id": int(curr_line["movie_id"]),
-        "conversation_id": int(curr_line["conversation_id"]),
-        "line_text": str(curr_line["line_text"] or None)
+        "character_id": curr_line.character_id
     }
     return return_line
 
