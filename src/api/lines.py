@@ -20,8 +20,11 @@ def get_line(id: int):
         char = db.characters.get(curr_line.c_id)
         json = {
             "line_id": id,
+            "line_text": curr_line.line_text,
             "char_id": char.id,
             "character_name": char.name,
+            "movie_id": curr_line.movie_id,
+            "movie_title:": db.movies[curr_line.movie_id].title
         }
         return json
     raise HTTPException(status_code=404, detail="Line not found")
