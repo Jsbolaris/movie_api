@@ -10,10 +10,13 @@ def get_line(id: int):
     """
     This endpoint returns a line by its identifier id. For each line:
     * 'line_id:' the internal id of the movie.
-    * 'character_name': the character name for the character who spoke the line.
-    * 'movie_id': the movie identifier for the movie the line was in
-    * 'conversation_id': the conversation that this line was a part of.
     * 'line_text': text of the line spoken
+    * 'char_id': the character id for the character who spoke the line.
+    * 'character_name': the character name for the character who spoke the line.
+    * 'movie_title': the movie title for the movie the line was in.
+    * 'person_1': the first character involved in the conversation.
+    * 'person_2': the second character involved in the conversation.
+
     """
     curr_line = db.lines.get(id)
     if curr_line:
@@ -23,8 +26,9 @@ def get_line(id: int):
             "line_text": curr_line.line_text,
             "char_id": char.id,
             "character_name": char.name,
-            "movie_id": curr_line.movie_id,
-            "movie_title:": db.movies[curr_line.movie_id].title
+            "movie_title:": db.movies[curr_line.movie_id].title,
+            "person_1:": db.conversations[curr_line.conv_id].c1_id,
+            "person_2:": db.conversations[curr_line.conv_id].c2_id
         }
         return json
     raise HTTPException(status_code=404, detail="Line not found")
