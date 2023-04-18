@@ -33,6 +33,20 @@ def get_line(id: int):
         return json
     raise HTTPException(status_code=404, detail="Line not found")
 
-class line_sort_options(str, Enum):
-    line_id = "line_id"
-    line_length = "line_length"
+
+@router.get("/lines/{char_id}", tags=["lines"])
+def get_char_lines(char_id: int):
+    """
+    This endpoint returns a character and all their lines
+    * 'character': The name of the character.
+    * 'lines': A list of lines spoken by said character
+    """
+    char = db.characters.get(id)
+    if char:
+        lines = db.characters.get(char_id).lines
+        json = {
+            "character_name": char.name,
+            "lines": lines
+        }
+        return json
+    raise HTTPException(status_code=404, detail="character not found")
