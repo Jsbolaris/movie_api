@@ -66,8 +66,8 @@ def get_conversations(id: int):
     if conv:
         movie = db.movies.get(conv.movie_id)
         json = {
-            "character_1": db.characters(conv.c1_id).name or None,
-            "character_2": db.characters(conv.c2_id).name or None,
+            "character_1": db.characters.get(conv.c1_id).name or None,
+            "character_2": db.characters.get(conv.c2_id).name or None,
             "movie title": movie.title
         }
         return json
