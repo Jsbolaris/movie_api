@@ -49,4 +49,5 @@ def get_char_lines(char_id: int):
             "lines": lines
         }
         return json
+
     raise HTTPException(status_code=404, detail="character not found")
