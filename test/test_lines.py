@@ -21,3 +21,11 @@ def test_get_char_lines():
 
     with open("test/lines/char1.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
+
+
+def test_get_conv():
+    response = client.get("/lines/3/conversations")
+    assert response.status_code == 200
+
+    with open("test/lines/conv1.json", encoding="utf-8") as f:
+        assert response.json() == json.load(f)
