@@ -43,7 +43,7 @@ def get_char_lines(char_id: int):
     * 'lines': A list of lines spoken by said character
     """
 
-    char = db.characters.get(id)
+    char = db.characters.get(char_id)
     if char:
         lines = db.characters.get(char_id).lines
         json = {
