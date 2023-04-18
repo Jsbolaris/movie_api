@@ -6,7 +6,7 @@ router = APIRouter()
 
 
 @router.get("/lines/{id}", tags=["lines"])
-def get_line(id: int):
+def get_line(temp_id: int):
     """
     This endpoint returns a line by its identifier id. For each line:
     * 'line_id:' the internal id of the movie.
@@ -18,11 +18,11 @@ def get_line(id: int):
     * 'person_2': the second character involved in the conversation.
 
     """
-    curr_line = db.lines.get(id)
+    curr_line = db.lines.get(temp_id)
     if curr_line:
         char = db.characters.get(curr_line.c_id)
         json = {
-            "line_id": id,
+            "line_id": temp_id,
             "line_text": curr_line.line_text,
             "char_id": char.id,
             "character_name": char.name,
