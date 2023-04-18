@@ -44,10 +44,8 @@ def get_char_lines(char_id: int):
     """
     character = db.characters.get(char_id)
     if character:
-        lines = db.characters.get(char_id).lines
         json = {
-            "character": character.name,
-            "lines": lines
+            "character": character.name
         }
         return json
     raise HTTPException(status_code=404, detail="Character not found")
