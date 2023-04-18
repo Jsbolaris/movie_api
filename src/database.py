@@ -32,6 +32,7 @@ with open("characters.csv", mode="r", encoding="utf8") as csv_file:
             row["gender"] or None,
             try_parse(int, row["age"]),
             0,
+            [],
         )
         characters[char.id] = char
 
@@ -62,7 +63,8 @@ with open("lines.csv", mode="r", encoding="utf8") as csv_file:
         c = characters.get(line.c_id)
         if c:
             c.num_lines += 1
-
+            # create list of lines per character
+            c.lines.append(line.line_text)
         conv = conversations.get(line.conv_id)
         if conv:
             conv.num_lines += 1

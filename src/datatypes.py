@@ -9,6 +9,7 @@ class Character:
     gender: str
     age: int
     num_lines: int
+    lines: list
 
 
 @dataclass
