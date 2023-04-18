@@ -35,7 +35,7 @@ def get_line(temp_id: int):
     raise HTTPException(status_code=404, detail="Line not found")
 
 
-@router.get("/lines/{id}", tags=["lines"])
+@router.get("/lines/{id}/character", tags=["lines"])
 def get_char_lines(id: int):
     """
     This endpoint returns a character and all their lines
