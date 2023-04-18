@@ -23,7 +23,7 @@ def get_line(temp_id: int):
         char = db.characters.get(curr_line.c_id)
         json = {
             "line_id": temp_id,
-            "line_text": curr_line.line_text,
+            "line_text": curr_line.line_text or None,
             "char_id": char.id,
             "character_name": char.name,
             "movie_title:": db.movies[curr_line.movie_id].title,
@@ -35,17 +35,22 @@ def get_line(temp_id: int):
     raise HTTPException(status_code=404, detail="Line not found")
 
 
-@router.get("/lines/{char_id}", tags=["lines"])
-def get_char_lines(char_id: int):
+@router.get("/lines/{id}", tags=["lines"])
+def get_char_lines(id: int):
     """
     This endpoint returns a character and all their lines
     * 'character': The name of the character.
     * 'lines': A list of lines spoken by said character
     """
-    character = db.characters.get(char_id)
+    character = db.characters.get(id)
     if character:
         json = {
             "character": character.name
         }
         return json
     raise HTTPException(status_code=404, detail="Character not found")
+
+
+@router.get("/lines/{id}", tags=["lines"])
+def get_conversations(char_id: int):
+    character = db.characters.get(char_id)
