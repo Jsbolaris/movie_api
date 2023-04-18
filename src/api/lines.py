@@ -42,7 +42,6 @@ def get_char_lines(char_id: int):
     * 'character': The name of the character.
     * 'lines': A list of lines spoken by said character
     """
-
     char = db.characters.get(char_id)
     if char:
         lines = db.characters.get(char_id).lines
