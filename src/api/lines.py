@@ -31,6 +31,7 @@ def get_line(id: int):
             "person_2:": db.conversations[curr_line.conv_id].c2_id
         }
         return json
+
     raise HTTPException(status_code=404, detail="Line not found")
 
 
@@ -41,6 +42,7 @@ def get_char_lines(char_id: int):
     * 'character': The name of the character.
     * 'lines': A list of lines spoken by said character
     """
+
     char = db.characters.get(id)
     if char:
         lines = db.characters.get(char_id).lines
