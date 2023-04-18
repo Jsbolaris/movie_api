@@ -53,6 +53,24 @@ def get_char_lines(id: int):
     raise HTTPException(status_code=404, detail="Character not found")
 
 
-@router.get("/lines/{id}", tags=["lines"])
-def get_conversations(char_id: int):
-    character = db.characters.get(char_id)
+@router.get("/lines/{id}/conversations", tags=["lines"])
+def get_conversations(id: int):
+    """
+    This endpoint returns information on a conversation when given the conversation id
+    * 'character_1': The name of the first character participating
+    * 'character_2': The name of the second character participating
+    * 'movie_title': The movie title
+    """
+
+    conv = db.conversations.get(id)
+    if conv:
+        movie = db.movies.get(conv.movie_id)
+        json = {
+            "character_1": db.characters(conv.c1_id),
+            "character_2": db.characters(conv.c2_id),
+            "movie title": movie.title
+        }
+        return json
+    raise HTTPException(status_code=404, detail="Character not found")
+
+

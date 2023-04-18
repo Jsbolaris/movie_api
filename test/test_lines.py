@@ -8,15 +8,15 @@ client = TestClient(app)
 
 
 def test_get_lines():
-    response = client.get("/lines/1")
+    response = client.get("/lines/50/line")
     assert response.status_code == 200
 
-    with open("test/lines/char1.json", encoding="utf-8") as f:
+    with open("test/lines/50.json", encoding="utf-8") as f:
         assert response.json() == json.load(f)
 
 
 def test_get_char_lines():
-    response = client.get("/lines/char1")
+    response = client.get("/lines/3/character")
     assert response.status_code == 200
 
     with open("test/lines/char1.json", encoding="utf-8") as f:
