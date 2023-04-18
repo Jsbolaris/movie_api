@@ -5,7 +5,7 @@ from src import database as db
 router = APIRouter()
 
 
-@router.get("/lines/{id}", tags=["lines"])
+@router.get("/lines/{id}/line", tags=["lines"])
 def get_line(temp_id: int):
     """
     This endpoint returns a line by its identifier id. For each line:
