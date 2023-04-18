@@ -42,13 +42,12 @@ def get_char_lines(char_id: int):
     * 'character': The name of the character.
     * 'lines': A list of lines spoken by said character
     """
-    char = db.characters.get(char_id)
-    if char:
+    character = db.characters.get(char_id)
+    if character:
         lines = db.characters.get(char_id).lines
         json = {
-            "character_name": char.name,
+            "character": character.name,
             "lines": lines
         }
         return json
-
-    raise HTTPException(status_code=404, detail="character not found")
+    raise HTTPException(status_code=404, detail="Character not found")
