@@ -38,7 +38,6 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
     The endpoint returns the id of the resulting conversation that was created.
     """
 
-    # TODO: Remove the following two lines. This is just a placeholder to show
     # how you could implement persistent storage.
 
     print(conversation)

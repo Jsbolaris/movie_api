@@ -19,7 +19,6 @@ supabase: Client = create_client(supabase_url, supabase_api_key)
 
 sess = supabase.auth.get_session()
 
-# TODO: Below is purely an example of reading and then writing a csv from supabase.
 # You should delete this code for your working example.
 
 # START PLACEHOLDER CODE
@@ -84,8 +83,20 @@ with open("characters.csv", mode="r", encoding="utf8") as csv_file:
             row["gender"] or None,
             try_parse(int, row["age"]),
             0,
+            [],  # empty list for lines/conv
+            [],
         )
         characters[char.id] = char
+
+        conv_csv = {
+            supabase.storage.from_("movie-api")
+            .download("conversations.csv")
+            .decode("utf-8")
+        }
+    myConversations = []
+    for row in csv.DictReader(io.StringIO(conv_csv), skipinitialspace=True):
+        myConversations.append(row)
+
 
 with open("conversations.csv", mode="r", encoding="utf8") as csv_file:
     conversations = {}
