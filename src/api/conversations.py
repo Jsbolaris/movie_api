@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from src import database as db
 from pydantic import BaseModel
 from typing import List
@@ -37,9 +37,42 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
 
     The endpoint returns the id of the resulting conversation that was created.
     """
-
-    # how you could implement persistent storage.
-
     print(conversation)
-    db.logs.append({"post_call_time": datetime.now(), "movie_id_added_to": movie_id})
-    db.upload_new_log()
+    person1 = db.characters[conversation.character_1_id]
+    person2 = db.characters[conversation.character_2_id]
+    linesort = 1
+
+    curr_cov = int(db.convos[len(db.convos) - 1]["conversation_id"])
+    curr_cov += 1
+    # hazard/duplication checks for adding
+    if conversation.character_1_id == conversation.character_2_id:
+        raise HTTPException(status_code=404, detail="these two characters are the same!")
+    if movie_id != person1.movie_id or movie_id != person2.movie_id:
+        raise HTTPException(status_code=404, detail="Characters not found in film")
+    if movie_id not in db.movies:
+        raise HTTPException(status_code=404, detail="movie not found")
+    if conversation.character_1_id not in db.characters or conversation.character_2_id not in db.characters:
+        raise HTTPException(status_code=404, detail="character(s) not found")
+    db.convos.append({"conversation_id": 1 + int(db.convos[len(db.convos) - 1]["conversation_id"]),
+                      "character1_id": conversation.character_1_id,
+                      "character2_id": conversation.character_2_id,
+                      "movie_id": movie_id
+                      })
+    db.upload_convo()
+    # add lines
+    for row in conversation.lines:
+        char_id = row.character_id
+        line_text = row.line_text
+        db.all_lines.append({"line_id": 1 + int(db.all_lines[len(db.all_lines) - 1]["line_id"]),
+                             "character_id": char_id,
+                             "movie_id": movie_id,
+                             "conversation_id": curr_cov,
+                             "line_sort": linesort,
+                             "line_text": line_text
+                             })
+        line_sort = linesort + 1
+    db.upload_lines()
+
+    return curr_cov
+    # print("Endpoint has been called!")
+    # check characters are different

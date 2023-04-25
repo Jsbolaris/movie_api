@@ -20,45 +20,64 @@ supabase: Client = create_client(supabase_url, supabase_api_key)
 sess = supabase.auth.get_session()
 
 
-# You should delete this code for your working example.
-
-# START PLACEHOLDER CODE
-
-# Reading in the log file from the supabase bucket
-# log_csv = (
-# supabase.storage.from_("movie-api")
-# .download("movie_conversations_log.csv")
-# .decode("utf-8")
-# )
-
-# logs = []
-# for row in csv.DictReader(io.StringIO(log_csv), skipinitialspace=True):
-# logs.append(row)
-
-
-# Writing to the log file and uploading to the supabase bucket
-# def upload_new_log():
-# output = io.StringIO()
-# csv_writer = csv.DictWriter(
-#    output, fieldnames=["post_call_time", "movie_id_added_to"]
-# )
-# csv_writer.writeheader()
-# csv_writer.writerows(logs)
-# supabase.storage.from_("movie-api").upload(
-#    "movie_conversations_log.csv",
-#    bytes(output.getvalue(), "utf-8"),
-#    {"x-upsert": "true"},
-# )
-
-
-# END PLACEHOLDER CODE
-
-
 def try_parse(type, val):
     try:
         return type(val)
     except ValueError:
         return None
+
+
+conversationsCSV = (
+    supabase.storage.from_("movie-api")
+    .download("conversations.csv")
+    .decode("utf-8")
+)
+
+convos = []
+for row in csv.DictReader(io.StringIO(conversationsCSV), skipinitialspace=True):
+    convos.append(row)
+
+linesCSV = (
+    supabase.storage.from_("movie-api")
+    .download("lines.csv")
+    .decode("utf-8")
+)
+all_lines = []
+for row in csv.DictReader(io.StringIO(conversationsCSV), skipinitialspace=True):
+    all_lines.append(row)
+
+
+def upload_convo():
+    output_convo = io.StringIO()
+    convo_writer = csv.DictWriter(
+        output_convo, fieldnames=["conversation_id", "character1_id", "character2_id", "movie_id"]
+    )
+    convo_writer.writeheader()
+    convo_writer.writerows(convos)
+    supabase.storage.from_("movie-api").upload(
+        "conversations.csv",
+        bytes(output_convo.getvalue(), "utf-8"),
+        {"x-upsert": "true"},
+    )
+
+
+def upload_lines():
+    output_lines = io.StringIO()
+    line_writer = csv.DictWriter(
+        output_lines, fieldnames=["line_id",
+                                  "character_id",
+                                  "movie_id",
+                                  "conversation_id",
+                                  "line_sort",
+                                  "line_text"]
+    )
+    line_writer.writeheader()
+    line_writer.writerows(all_lines)
+    supabase.storage.from_("movie-api").upload(
+        "conversations.csv",
+        bytes(output_lines.getvalue(), "utf-8"),
+        {"x-upsert": "true"},
+    )
 
 
 with open("movies.csv", mode="r", encoding="utf8") as csv_file:
@@ -84,10 +103,9 @@ with open("characters.csv", mode="r", encoding="utf8") as csv_file:
             row["gender"] or None,
             try_parse(int, row["age"]),
             0,
-            [],  # empty list for lines/conv
-            [],
         )
         characters[char.id] = char
+
 with open("conversations.csv", mode="r", encoding="utf8") as csv_file:
     conversations = {}
     for row in csv.DictReader(csv_file, skipinitialspace=True):
