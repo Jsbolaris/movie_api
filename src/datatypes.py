@@ -10,7 +10,7 @@ class Character:
     age: int
     num_lines: int
     lines: list
-
+    conversations: list
 
 @dataclass
 class Movie:

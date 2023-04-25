@@ -1,5 +1,56 @@
 import csv
 from src.datatypes import Character, Movie, Conversation, Line
+import os
+import io
+from supabase import Client, create_client
+import dotenv
+
+# DO NOT CHANGE THIS TO BE HARDCODED. ONLY PULL FROM ENVIRONMENT VARIABLES.
+dotenv.load_dotenv()
+supabase_api_key = os.environ.get("SUPABASE_API_KEY")
+supabase_url = os.environ.get("SUPABASE_URL")
+
+if supabase_api_key is None or supabase_url is None:
+    raise Exception(
+        "You must set the SUPABASE_API_KEY and SUPABASE_URL environment variables."
+    )
+
+supabase: Client = create_client(supabase_url, supabase_api_key)
+
+sess = supabase.auth.get_session()
+
+# You should delete this code for your working example.
+
+# START PLACEHOLDER CODE
+
+# Reading in the log file from the supabase bucket
+log_csv = (
+    supabase.storage.from_("movie-api")
+    .download("movie_conversations_log.csv")
+    .decode("utf-8")
+)
+
+logs = []
+for row in csv.DictReader(io.StringIO(log_csv), skipinitialspace=True):
+    logs.append(row)
+
+
+# Writing to the log file and uploading to the supabase bucket
+def upload_new_log():
+    output = io.StringIO()
+    csv_writer = csv.DictWriter(
+        output, fieldnames=["post_call_time", "movie_id_added_to"]
+    )
+    csv_writer.writeheader()
+    csv_writer.writerows(logs)
+    supabase.storage.from_("movie-api").upload(
+        "movie_conversations_log.csv",
+        bytes(output.getvalue(), "utf-8"),
+        {"x-upsert": "true"},
+    )
+
+
+# END PLACEHOLDER CODE
 
 
 def try_parse(type, val):
@@ -32,9 +83,20 @@ with open("characters.csv", mode="r", encoding="utf8") as csv_file:
             row["gender"] or None,
             try_parse(int, row["age"]),
             0,
+            [],  # empty list for lines/conv
             [],
         )
         characters[char.id] = char
+
+        conv_csv = {
+            supabase.storage.from_("movie-api")
+            .download("conversations.csv")
+            .decode("utf-8")
+        }
+    myConversations = []
+    for row in csv.DictReader(io.StringIO(conv_csv), skipinitialspace=True):
+        myConversations.append(row)
+
 
 with open("conversations.csv", mode="r", encoding="utf8") as csv_file:
     conversations = {}
@@ -63,8 +125,7 @@ with open("lines.csv", mode="r", encoding="utf8") as csv_file:
         c = characters.get(line.c_id)
         if c:
             c.num_lines += 1
-            # create list of lines per character
-            c.lines.append(line.line_text)
+
         conv = conversations.get(line.conv_id)
         if conv:
             conv.num_lines += 1
