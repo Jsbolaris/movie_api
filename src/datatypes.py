@@ -12,6 +12,7 @@ class Character:
     lines: list
     conversations: list
 
+
 @dataclass
 class Movie:
     id: int
