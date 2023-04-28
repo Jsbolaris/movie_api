@@ -32,15 +32,15 @@ def test_add_conversations():
 def test_add_conversations2():
     response1 = client.post("/movies/0/conversations/", json={
         "character_1_id": 10,
-        "character_2_id": 11,
+        "character_2_id": 12,
         "lines": [
             {
                 "character_id": 10,
-                "line_text": "I'm a line!"
+                "line_text": "I'm another line!"
             },
             {
-                "character_id": 11,
-                "line_text": "I'm a line too!"
+                "character_id": 12,
+                "line_text": "I'm another line too!"
             }
         ]
     })

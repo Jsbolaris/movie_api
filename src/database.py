@@ -27,12 +27,16 @@ def try_parse(type, val):
         return None
 
 
+logs_csv = (
+    supabase.storage.from_("movie-api")
+    .download("movie_conversations_log.csv")
+    .decode("utf-8")
+)
 conversationsCSV = (
     supabase.storage.from_("movie-api")
     .download("conversations.csv")
     .decode("utf-8")
 )
-
 convos = []
 for row in csv.DictReader(io.StringIO(conversationsCSV), skipinitialspace=True):
     convos.append(row)
@@ -42,7 +46,9 @@ linesCSV = (
     .download("lines.csv")
     .decode("utf-8")
 )
+
 all_lines = []
+
 for row in csv.DictReader(io.StringIO(conversationsCSV), skipinitialspace=True):
     all_lines.append(row)
 

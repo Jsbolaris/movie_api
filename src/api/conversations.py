@@ -37,7 +37,6 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
 
     The endpoint returns the id of the resulting conversation that was created.
     """
-    print(conversation)
     person1 = db.characters[conversation.character_1_id]
     person2 = db.characters[conversation.character_2_id]
     linesort = 1
