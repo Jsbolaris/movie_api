@@ -112,9 +112,8 @@ with open("characters.csv", mode="r", encoding="utf8") as csv_file:
         )
         characters[char.id] = char
 
-with open("conversations.csv", mode="r", encoding="utf8") as csv_file:
     conversations = {}
-    for row in csv.DictReader(csv_file, skipinitialspace=True):
+    for row in convos:
         conv = Conversation(
             try_parse(int, row["conversation_id"]),
             try_parse(int, row["character1_id"]),
@@ -124,9 +123,8 @@ with open("conversations.csv", mode="r", encoding="utf8") as csv_file:
         )
         conversations[conv.id] = conv
 
-with open("lines.csv", mode="r", encoding="utf8") as csv_file:
     lines = {}
-    for row in csv.DictReader(csv_file, skipinitialspace=True):
+    for row in all_lines:
         line = Line(
             try_parse(int, row["line_id"]),
             try_parse(int, row["character_id"]),

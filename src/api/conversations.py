@@ -37,41 +37,42 @@ def add_conversation(movie_id: int, conversation: ConversationJson):
 
     The endpoint returns the id of the resulting conversation that was created.
     """
-    person1 = db.characters[conversation.character_1_id]
-    person2 = db.characters[conversation.character_2_id]
-    linesort = 1
+    """
+    Edgecases:
+    -Not secure
+    -Two users attempting to upload data before another has finished will cause issues.
+    -Not scalable, this function is slow and not super secure or efficient.
+    -duplication checking is basic at best.
+    -As stated before, this function will not do well when requested multiple times.
+    """
+    line_sort = 1
+    try:
+        movie = db.movies[movie_id]
+        character_1 = db.characters[conversation.character_1_id]
+        character_2 = db.characters[conversation.character_2_id]
+    except KeyError:
+        raise HTTPException(status_code=404, detail="Object does not match any in database")
+    # check if characters are in selected movie
+    if (character_1.movie_id != movie_id or character_2.movie_id != movie_id) or (character_1.id == character_2.id):
+        raise HTTPException(status_code=404, detail="character not in movie")
+    conversation_id = max(d.id for d in db.conversations.values()) + 1
+    line_id = max(d.id for d in db.lines.values()) + 1
 
-    curr_cov = int(db.convos[len(db.convos) - 1]["conversation_id"])
-    curr_cov += 1
-    # hazard/duplication checks for adding
-    if conversation.character_1_id == conversation.character_2_id:
-        raise HTTPException(status_code=404, detail="these two characters are the same!")
-    if movie_id != person1.movie_id or movie_id != person2.movie_id:
-        raise HTTPException(status_code=404, detail="Characters not found in film")
-    if movie_id not in db.movies:
-        raise HTTPException(status_code=404, detail="movie not found")
-    if conversation.character_1_id not in db.characters or conversation.character_2_id not in db.characters:
-        raise HTTPException(status_code=404, detail="character(s) not found")
-    db.convos.append({"conversation_id": 1 + int(db.convos[len(db.convos) - 1]["conversation_id"]),
-                      "character1_id": conversation.character_1_id,
-                      "character2_id": conversation.character_2_id,
-                      "movie_id": movie_id
-                      })
+    for line in conversation.lines:
+        db.lines[line_id] = db.Line(line_id, line.character_id, movie_id, conversation_id, line_sort, line.line_text)
+        db.all_lines.append({"line_id": line_id, "character_id": line.character_id, "movie_id": movie_id,
+                             "conversation_id": conversation_id, "line_sort": line_sort, "line_text": line.line_text})
+        db.upload_lines()
+        line_sort += 1
+        line_id += 1
+
+    db.conversations[conversation_id] = db.Conversation(conversation_id, character_1.id, character_2.id, movie_id,
+                                                        len(conversation.lines))
+    db.convos.append({"conversation_id": conversation_id,
+                      "character1_id": character_1.id,
+                      "character2_id": character_2.id,
+                      "movie_id": movie_id})
     db.upload_convo()
-    # add lines
-    for row in conversation.lines:
-        char_id = row.character_id
-        line_text = row.line_text
-        db.all_lines.append({"line_id": 1 + int(db.all_lines[len(db.all_lines) - 1]["line_id"]),
-                             "character_id": char_id,
-                             "movie_id": movie_id,
-                             "conversation_id": curr_cov,
-                             "line_sort": linesort,
-                             "line_text": line_text
-                             })
-        line_sort = linesort + 1
-    db.upload_lines()
-
-    return curr_cov
+    return {"conversation_id": conversation_id}
     # print("Endpoint has been called!")
     # check characters are different
